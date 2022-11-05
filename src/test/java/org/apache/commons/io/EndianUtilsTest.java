@@ -48,10 +48,10 @@ public class EndianUtilsTest  {
         final byte[] bytes = { 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01 };
         final double d1 = Double.longBitsToDouble( 0x0102030405060708L );
         final double d2 = EndianUtils.readSwappedDouble( bytes, 0 );
-        assertEquals( d1, d2, 0.0 );
+        assertEquals("difference between values d1 and d2", d1, d2, 0.0 );
 
         final ByteArrayInputStream input = new ByteArrayInputStream(bytes);
-        assertEquals( d1, EndianUtils.readSwappedDouble( input ), 0.0 );
+        assertEquals("difference between values d1 and input", d1, EndianUtils.readSwappedDouble( input ), 0.0 );
     }
 
     @Test
@@ -59,19 +59,19 @@ public class EndianUtilsTest  {
         final byte[] bytes = { 0x04, 0x03, 0x02, 0x01 };
         final float f1 = Float.intBitsToFloat( 0x01020304 );
         final float f2 = EndianUtils.readSwappedFloat( bytes, 0 );
-        assertEquals( f1, f2, 0.0 );
+        assertEquals("difference between values f1 and f2", f1, f2, 0.0 );
 
         final ByteArrayInputStream input = new ByteArrayInputStream(bytes);
-        assertEquals( f1, EndianUtils.readSwappedFloat( input ), 0.0 );
+        assertEquals("difference between values f1 and input", f1, EndianUtils.readSwappedFloat( input ), 0.0 );
     }
 
     @Test
     public void testReadSwappedInteger() throws IOException {
         final byte[] bytes = { 0x04, 0x03, 0x02, 0x01 };
-        assertEquals( 0x01020304, EndianUtils.readSwappedInteger( bytes, 0 ) );
+        assertEquals("difference between values byte",  0x01020304, EndianUtils.readSwappedInteger( bytes, 0 ) );
 
         final ByteArrayInputStream input = new ByteArrayInputStream(bytes);
-        assertEquals( 0x01020304, EndianUtils.readSwappedInteger( input ) );
+        assertEquals("difference between values byte and input", 0x01020304, EndianUtils.readSwappedInteger( input ) );
     }
 
     @Test

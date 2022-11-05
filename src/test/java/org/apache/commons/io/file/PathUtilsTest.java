@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+import java.beans.Transient;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -145,9 +146,14 @@ public class PathUtilsTest extends AbstractTempDirTest {
             final Path sourceDir = Paths.get("src/test/resources/org/apache/commons/io/dirs-2-file-size-2").toAbsolutePath();
             PathUtils.copyDirectory(sourceDir, targetDir);
             assertTrue(Files.exists(targetDir.resolve("dirs-a-file-size-1")));
+        }
+    }
 
+    @Test
+    public void testCopyDirectoryForDifferentFilesystemsWithRelative() throws IOException {
+        try (FileSystem archive = openArchive(tempDirPath.resolve(TEST_JAR_NAME), true)) {
             // absolute dir -> absolute jar
-            targetDir = archive.getPath("/");
+            Path targetDir = archive.getPath("/");
             PathUtils.copyDirectory(sourceDir, targetDir);
             assertTrue(Files.exists(targetDir.resolve("dirs-a-file-size-1")));
         }
@@ -180,9 +186,14 @@ public class PathUtilsTest extends AbstractTempDirTest {
             final Path sourceDir = Paths.get("src/test/resources/org/apache/commons/io/dirs-2-file-size-2");
             PathUtils.copyDirectory(sourceDir, targetDir);
             assertTrue(Files.exists(targetDir.resolve("dirs-a-file-size-1")));
+        }
+    }
 
+    @Test
+    public void testCopyDirectoryForDifferentFilesystemsWithRelativePathReverseAbsolute() throws IOException {
+        try (FileSystem archive = openArchive(tempDirPath.resolve(TEST_JAR_NAME), true)) {
             // relative dir -> absolute jar
-            targetDir = archive.getPath("/");
+            Path targetDir = archive.getPath("/");
             PathUtils.copyDirectory(sourceDir, targetDir);
             assertTrue(Files.exists(targetDir.resolve("dirs-a-file-size-1")));
         }
@@ -430,21 +441,6 @@ public class PathUtilsTest extends AbstractTempDirTest {
         // Sanity checks
         assertTrue(readable);
         assertTrue(writable);
-        // Test A
-        PathUtils.setReadOnly(resolved, false);
-        assertTrue(Files.isReadable(resolved), "isReadable");
-        assertTrue(Files.isWritable(resolved), "isWritable");
-        // Again, shouldn't blow up.
-        PathUtils.setReadOnly(resolved, false);
-        assertTrue(Files.isReadable(resolved), "isReadable");
-        assertTrue(Files.isWritable(resolved), "isWritable");
-        //
-        assertEquals(regularFile, Files.isReadable(resolved));
-        assertEquals(executable, Files.isExecutable(resolved));
-        assertEquals(hidden, Files.isHidden(resolved));
-        assertEquals(directory, Files.isDirectory(resolved));
-        assertEquals(symbolicLink, Files.isSymbolicLink(resolved));
-        // Test B
         PathUtils.setReadOnly(resolved, true);
         if (isPosix) {
             // On POSIX, now that the parent is not WX, the file is not readable.
@@ -453,6 +449,87 @@ public class PathUtilsTest extends AbstractTempDirTest {
             assertTrue(Files.isReadable(resolved), "isReadable");
         }
         assertFalse(Files.isWritable(resolved), "isWritable");
+        assertEquals(executable, Files.isExecutable(resolved));
+        assertEquals(hidden, Files.isHidden(resolved));
+        assertEquals(directory, Files.isDirectory(resolved));
+        assertEquals(symbolicLink, Files.isSymbolicLink(resolved));
+        //
+        PathUtils.setReadOnly(resolved, false);
+        PathUtils.deleteFile(resolved);
+    }
+
+    @Test
+    public void testSetReadOnlyFileIsWritable() throws IOException { 
+        final Path resolved = tempDirPath.resolve("testSetReadOnlyFile.txt");
+        PathUtils.writeString(resolved, "test", StandardCharsets.UTF_8);
+        final boolean writable = Files.isWritable(resolved);
+        PathUtils.setReadOnly(resolved, false);
+        assertTrue(Files.isWritable(resolved), "isWritable");
+    }
+
+    @Test
+    public void testSetReadOnlyFileIsReadable() throws IOException { 
+        final Path resolved = tempDirPath.resolve("testSetReadOnlyFile.txt");
+        PathUtils.writeString(resolved, "test", StandardCharsets.UTF_8);
+        final boolean readable = Files.isReadable(resolved);
+        PathUtils.setReadOnly(resolved, false);
+        assertTrue(Files.isReadable(resolved), "isReadable");
+    }
+
+    @Test
+    public void testSetReadOnlyFileAssertEqualsIsReadable() throws IOException { 
+        final Path resolved = tempDirPath.resolve("testSetReadOnlyFile.txt");
+        PathUtils.writeString(resolved, "test", StandardCharsets.UTF_8);
+        final boolean regularFile = Files.isRegularFile(resolved);
+        PathUtils.setReadOnly(resolved, false);
+        assertEquals(regularFile, Files.isReadable(resolved));
+    }
+
+    @Test
+    public void testSetReadOnlyFileAssertEqualIssymbolicLink() throws IOException { 
+        final Path resolved = tempDirPath.resolve("testSetReadOnlyFile.txt");
+        PathUtils.writeString(resolved, "test", StandardCharsets.UTF_8);
+        final boolean symbolicLink = Files.isSymbolicLink(resolved);
+        PathUtils.setReadOnly(resolved, false);
+        assertEquals(symbolicLink, Files.isSymbolicLink(resolved));
+    }
+
+    @Test
+    public void testSetReadOnlyFileAssertEqualIsexecutable() throws IOException { 
+        final Path resolved = tempDirPath.resolve("testSetReadOnlyFile.txt");
+        PathUtils.writeString(resolved, "test", StandardCharsets.UTF_8);
+        final boolean executable = Files.isExecutable(resolved);
+        PathUtils.setReadOnly(resolved, false);
+        assertEquals(executable, Files.isExecutable(resolved));
+    }
+
+    @Test
+    public void testSetReadOnlyFileAssertEqualIsdirectory() throws IOException { 
+        final Path resolved = tempDirPath.resolve("testSetReadOnlyFile.txt");
+        PathUtils.writeString(resolved, "test", StandardCharsets.UTF_8);
+        final boolean directory = Files.isDirectory(resolved);
+        PathUtils.setReadOnly(resolved, false);
+        assertEquals(directory, Files.isDirectory(resolved));
+    }
+
+    @Test
+    public void testSetReadOnlyFileAssertEqualIHidden() throws IOException { 
+        final Path resolved = tempDirPath.resolve("testSetReadOnlyFile.txt");
+        PathUtils.writeString(resolved, "test", StandardCharsets.UTF_8);
+        final boolean hidden = Files.isHidden(resolved);
+        PathUtils.setReadOnly(resolved, false);
+        assertEquals(hidden, Files.isHidden(resolved));
+    }
+
+    @Test
+    public void testSetReadOnlyFileVerifyFile() throws IOException {
+        final Path resolved = tempDirPath.resolve("testSetReadOnlyFile.txt");
+        final boolean isPosix = PathUtils.isPosix(tempDirPath);
+
+        PathUtils.writeString(resolved, "test", StandardCharsets.UTF_8);
+        final boolean readable = Files.isReadable(resolved);
+        final boolean regularFile = Files.isRegularFile(resolved);
+    
         final DosFileAttributeView dosFileAttributeView = PathUtils.getDosFileAttributeView(resolved);
         if (dosFileAttributeView != null) {
             assertTrue(dosFileAttributeView.readAttributes().isReadOnly());
@@ -462,13 +539,6 @@ public class PathUtilsTest extends AbstractTempDirTest {
         } else {
             assertEquals(regularFile, Files.isReadable(resolved));
         }
-        assertEquals(executable, Files.isExecutable(resolved));
-        assertEquals(hidden, Files.isHidden(resolved));
-        assertEquals(directory, Files.isDirectory(resolved));
-        assertEquals(symbolicLink, Files.isSymbolicLink(resolved));
-        //
-        PathUtils.setReadOnly(resolved, false);
-        PathUtils.deleteFile(resolved);
     }
 
     @Test

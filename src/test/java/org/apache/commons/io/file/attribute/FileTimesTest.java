@@ -119,6 +119,10 @@ public class FileTimesTest {
     public void testMinusMillis() {
         final int millis = 2;
         assertEquals(Instant.EPOCH.minusMillis(millis), FileTimes.minusMillis(FileTimes.EPOCH, millis).toInstant());
+    }
+
+    @Test
+    public void testMinusMillisFileTimes() {
         assertEquals(Instant.EPOCH, FileTimes.minusMillis(FileTimes.EPOCH, 0).toInstant());
     }
 
@@ -126,6 +130,10 @@ public class FileTimesTest {
     public void testMinusNanos() {
         final int millis = 2;
         assertEquals(Instant.EPOCH.minusNanos(millis), FileTimes.minusNanos(FileTimes.EPOCH, millis).toInstant());
+    }
+
+    @Test 
+    public void testMinusNanosFileTimes() {
         assertEquals(Instant.EPOCH, FileTimes.minusNanos(FileTimes.EPOCH, 0).toInstant());
     }
 
@@ -133,8 +141,14 @@ public class FileTimesTest {
     public void testMinusSeconds() {
         final int seconds = 2;
         assertEquals(Instant.EPOCH.minusSeconds(seconds), FileTimes.minusSeconds(FileTimes.EPOCH, seconds).toInstant());
+    }
+
+    @Test
+    public void testMinusSecondsFileTimes() {
         assertEquals(Instant.EPOCH, FileTimes.minusSeconds(FileTimes.EPOCH, 0).toInstant());
     }
+
+
 
     @ParameterizedTest
     @MethodSource("dateToNtfsProvider")
@@ -163,6 +177,10 @@ public class FileTimesTest {
     public void testPlusMinusMillis() {
         final int millis = 2;
         assertEquals(Instant.EPOCH.plusMillis(millis), FileTimes.plusMillis(FileTimes.EPOCH, millis).toInstant());
+    }
+
+    @Test
+    public void testPlusMinusMillisFileTimes() {
         assertEquals(Instant.EPOCH, FileTimes.plusMillis(FileTimes.EPOCH, 0).toInstant());
     }
 
@@ -170,6 +188,10 @@ public class FileTimesTest {
     public void testPlusNanos() {
         final int millis = 2;
         assertEquals(Instant.EPOCH.plusNanos(millis), FileTimes.plusNanos(FileTimes.EPOCH, millis).toInstant());
+    }
+
+    @Test
+    public void testPlusNanosFileTimes() {
         assertEquals(Instant.EPOCH, FileTimes.plusNanos(FileTimes.EPOCH, 0).toInstant());
     }
 
